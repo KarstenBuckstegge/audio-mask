@@ -1,47 +1,61 @@
 (function() {
     const useInputMedia = stream => {
-        // console.log('useInputMedia');
-        // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // const analyser = audioCtx.createAnalyser();
-        // const source = audioCtx.createMediaStreamSource(stream);
-
-        // source.connect(analyser);
-        // analyser.connect(audioCtx.destination);
-
-        // analyser.fftSize = 32;
-        // const bufferLength = analyser.frequencyBinCount;
-        // const dataArray = new Uint8Array(bufferLength);
-
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
         const video = document.querySelector('.video');
 
-        // const sliceAudioData = () => {
-        //     console.log('sliceAudioData');
-        //     const slicedData = [];
+        // AUDIO API INIT
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
 
-        //     for(let i = 0; i < bufferLength; i++) {
-        //         const value = dataArray[i] / 2;
-        //         slicedData.push(value);
-        //     }
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
 
-        //     return slicedData;
-        // }
+        // CANVAS INIT
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const body = document.querySelector('body');
+        const clientRect = body.getBoundingClientRect();
+
+        canvas.width = clientRect.width;
+        canvas.height = clientRect.height;
+        const centerX = canvas.width * 0.5;
+        const centerY = canvas.height * 0.5;
+        const radiusMax = Math.min(centerX, centerY) - 20;
+        const radiusMin = radiusMax * 0.8;
+        ctx.lineWidth = 12;
+        ctx.strokeStyle = "#09f";
+        ctx.fillStyle = "rgba(0,0,0,0.16)";
+
 
         const clipVideo = factor => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
+
+            analyser.getByteFrequencyData(dataArray);
+
+            bandAverageData = (dataArray[1] + dataArray[2]) / 512;
+
             ctx.beginPath();
-            ctx.arc(306, 277, 274, 0, Math.PI * 2, false);
+            ctx.arc(
+                centerX,
+                centerY,
+                radiusMin + (radiusMax - radiusMin) * bandAverageData*bandAverageData*bandAverageData*bandAverageData,
+                0,
+                6.28);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.drawImage(canvas, -8, -8, canvas.width + 16, canvas.height + 16);
 
-            ctx.clip();
+            // ctx.clip();
 
-            ctx.drawImage(video, 0, 0);
+            // ctx.drawImage(video, 0, 0);
 
-            ctx.restore();
+            // ctx.restore();
         }
 
-        console.log('SET NOW');
         let then = new Date().getTime();
 
         function doThings() {
@@ -50,8 +64,7 @@
             if(now - then > 25) {
                 // analyser.getByteFrequencyData(dataArray);
                 // const data = sliceAudioData();
-                clipVideo(Math.random());
-                // console.log('data', data);
+                clipVideo();
                 then = now;
             }
 
