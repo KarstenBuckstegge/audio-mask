@@ -31,9 +31,7 @@
         const centerY = canvas.height * 0.5;
         const radiusMax = Math.min(centerX, centerY) - 10;
         const radiusMin = radiusMax * 0.75;
-        ctx.lineWidth = 12;
-        ctx.strokeStyle = "#09f";
-        ctx.fillStyle = "rgba(0,0,0,0.16)";
+        ctx.fillStyle = "rgb(0,0,0)";
 
 
         const clipVideo = factor => {
@@ -52,6 +50,7 @@
                 0,
                 6.28);
             ctx.closePath();
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.clip();
             ctx.drawImage(video, 0, 0);
