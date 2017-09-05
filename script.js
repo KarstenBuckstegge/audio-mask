@@ -6,8 +6,13 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const analyser = audioCtx.createAnalyser();
         const source = audioCtx.createMediaStreamSource(stream);
+        const gainNode = audioCtx.createGain();
         source.connect(analyser);
-        analyser.connect(audioCtx.destination);
+
+        // mute output
+        source.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.value = 0;
 
         analyser.fftSize = 256;
         const bufferLength = analyser.frequencyBinCount;
@@ -24,8 +29,8 @@
         canvas.height = clientRect.height;
         const centerX = canvas.width * 0.5;
         const centerY = canvas.height * 0.5;
-        const radiusMax = Math.min(centerX, centerY) - 20;
-        const radiusMin = radiusMax * 0.8;
+        const radiusMax = Math.min(centerX, centerY) - 10;
+        const radiusMin = radiusMax * 0.75;
         ctx.lineWidth = 12;
         ctx.strokeStyle = "#09f";
         ctx.fillStyle = "rgba(0,0,0,0.16)";
@@ -59,8 +64,6 @@
             const now = new Date().getTime();
             
             if(now - then > 25) {
-                // analyser.getByteFrequencyData(dataArray);
-                // const data = sliceAudioData();
                 clipVideo();
                 then = now;
             }
