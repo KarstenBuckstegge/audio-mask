@@ -33,6 +33,7 @@
 
         const clipVideo = factor => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
 
             analyser.getByteFrequencyData(dataArray);
 
@@ -46,14 +47,10 @@
                 0,
                 6.28);
             ctx.closePath();
-            ctx.stroke();
-            ctx.drawImage(canvas, -8, -8, canvas.width + 16, canvas.height + 16);
 
-            // ctx.clip();
-
-            // ctx.drawImage(video, 0, 0);
-
-            // ctx.restore();
+            ctx.clip();
+            ctx.drawImage(video, 0, 0);
+            ctx.restore();
         }
 
         let then = new Date().getTime();
