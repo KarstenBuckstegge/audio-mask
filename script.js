@@ -14,7 +14,7 @@
         gainNode.connect(audioCtx.destination);
         gainNode.gain.value = 0;
 
-        analyser.fftSize = 256;
+        analyser.fftSize = 512;
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
 
@@ -30,9 +30,23 @@
         const centerX = canvas.width * 0.5;
         const centerY = canvas.height * 0.5;
         const radiusMax = Math.min(centerX, centerY) - 10;
-        const radiusMin = radiusMax * 0.75;
+        const radiusMin = radiusMax * 0.5;
         ctx.fillStyle = "rgb(0,0,0)";
 
+
+        const dataLength = dataArray.length;
+        const arcStepLength = 360 / dataLength;
+        const radiusRange = radiusMax - radiusMin;
+
+        const getAnchorPointPosition = (gain, i) => {
+            const angle = arcStepLength * i;
+            const radius = radiusMin + (gain / 256) * radiusRange;
+
+            const posX = centerX + radius * Math.cos(angle);
+            const posY = centerY + radius * Math.sin(angle);
+
+            return [posX, posY];
+        }
 
         const clipVideo = factor => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -40,16 +54,21 @@
 
             analyser.getByteFrequencyData(dataArray);
 
-            bandAverageData = (dataArray[1] + dataArray[2]) / 512;
+            for (i = 0; i < dataLength; i++) {
+                const anchorPointPosition = getAnchorPointPosition(dataArray[i], i);
 
-            ctx.beginPath();
-            ctx.arc(
-                centerX,
-                centerY,
-                radiusMin + (radiusMax - radiusMin) * bandAverageData*bandAverageData*bandAverageData*bandAverageData,
-                0,
-                6.28);
-            ctx.closePath();
+                if (i === 0) {
+                    console.log('begin path at', anchorPointPosition);
+                    ctx.beginPath();
+                    ctx.moveTo(anchorPointPosition[0], anchorPointPosition[1]);
+                } else if (i === dataLength - 1) {
+                    console.log('close path');
+                    ctx.closePath();
+                } else {
+                    ctx.lineTo(anchorPointPosition[0], anchorPointPosition[1]);
+                }
+            }
+
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.clip();
