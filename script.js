@@ -9,14 +9,14 @@
         const gainNode = audioCtx.createGain();
         source.connect(analyser);
 
+        analyser.fftSize = 512;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
         // mute output
         source.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         gainNode.gain.value = 0;
-
-        analyser.fftSize = 512;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
 
         // CANVAS INIT
         const canvas = document.getElementById('canvas');
@@ -27,6 +27,9 @@
 
         canvas.width = clientRect.width;
         canvas.height = clientRect.height;
+        ctx.fillStyle = "rgb(0,0,0)";
+
+        // positions and dimensions
         const centerX = canvas.width * 0.5;
         const centerY = canvas.height * 0.5;
         const radiusMax = Math.min(centerX, centerY) - 10;
@@ -36,12 +39,10 @@
         const videoRect = video.getBoundingClientRect();
         const videoWidth = videoHeight * ( videoRect.width / videoRect.height );
 
-        ctx.fillStyle = "rgb(0,0,0)";
-
-
         const dataLength = dataArray.length;
         const arcStepLength = 360 / dataLength;
         const radiusRange = radiusMax - radiusMin;
+
 
         const getAnchorPointPosition = (gain, i) => {
             const angle = arcStepLength * i;
@@ -53,6 +54,7 @@
             return [posX, posY];
         }
 
+        // The actual magic happens here
         const clipVideo = factor => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
@@ -85,23 +87,22 @@
             ctx.restore();
         }
 
+        // looping louie
         let then = new Date().getTime();
 
         function doThings() {
             const now = new Date().getTime();
-            
             if(now - then > 25) {
                 clipVideo();
                 then = now;
             }
-
             const doer = requestAnimationFrame(doThings);
         }
 
         doThings();
     }
 
-
+    // request audio data from the client
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
     .then(useInputMedia)
 }());
