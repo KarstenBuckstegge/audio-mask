@@ -31,6 +31,11 @@
         const centerY = canvas.height * 0.5;
         const radiusMax = Math.min(centerX, centerY) - 10;
         const radiusMin = radiusMax * 0.5;
+
+        const videoHeight = radiusMax * 2;
+        const videoRect = video.getBoundingClientRect();
+        const videoWidth = videoHeight * ( videoRect.width / videoRect.height );
+
         ctx.fillStyle = "rgb(0,0,0)";
 
 
@@ -58,11 +63,9 @@
                 const anchorPointPosition = getAnchorPointPosition(dataArray[i], i);
 
                 if (i === 0) {
-                    console.log('begin path at', anchorPointPosition);
                     ctx.beginPath();
                     ctx.moveTo(anchorPointPosition[0], anchorPointPosition[1]);
                 } else if (i === dataLength - 1) {
-                    console.log('close path');
                     ctx.closePath();
                 } else {
                     ctx.lineTo(anchorPointPosition[0], anchorPointPosition[1]);
@@ -72,7 +75,13 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.clip();
-            ctx.drawImage(video, 0, 0);
+            ctx.drawImage(
+                video,
+                centerX - videoWidth / 2,
+                centerY - radiusMax,
+                videoWidth,
+                videoHeight
+            );
             ctx.restore();
         }
 
