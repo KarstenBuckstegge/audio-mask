@@ -9,6 +9,6 @@
 }
 
 .video {
-    position: absolute;
+    position: fixed;
     left: 10000px;
 }

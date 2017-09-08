@@ -32,8 +32,8 @@
         // positions and dimensions
         const centerX = canvas.width * 0.5;
         const centerY = canvas.height * 0.5;
-        const radiusMax = Math.min(centerX, centerY) - 10;
-        const radiusMin = radiusMax * 0.5;
+        const radiusMax = Math.min(centerX, centerY) - 5;
+        const radiusMin = radiusMax * 0.7;
 
         const videoHeight = radiusMax * 2;
         const videoRect = video.getBoundingClientRect();
@@ -54,13 +54,7 @@
             return [posX, posY];
         }
 
-        // The actual magic happens here
-        const clipVideo = factor => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-
-            analyser.getByteFrequencyData(dataArray);
-
+        const drawCanvasImage = () => {
             for (i = 0; i < dataLength; i++) {
                 const anchorPointPosition = getAnchorPointPosition(dataArray[i], i);
 
@@ -84,6 +78,27 @@
                 videoWidth,
                 videoHeight
             );
+        }
+
+        const getVolume = () => {
+            let total = 0;
+            for(i = 0; i < dataArray.length; i++) {
+                total += parseInt(dataArray[i]);
+            }
+            return total / dataArray.length;
+        }
+
+        // The actual magic happens here
+        const clipVideo = amplify => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+
+            analyser.getByteFrequencyData(dataArray);
+
+            drawCanvasImage();
+
+            const hueRotation = 180 - (Math.min(1, getVolume() / 64) * 180);
+            canvas.setAttribute('style', `filter: hue-rotate(${hueRotation}deg)`);
             ctx.restore();
         }
 
